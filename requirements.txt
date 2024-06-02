@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+tensorflow
+pytube
+jinja2
+pydantic
+numpy

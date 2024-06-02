@@ -1,0 +1,116 @@
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+import keras
+from pydantic import BaseModel
+import urllib.parse
+from tensorflow.keras.models import load_model
+import json
+from tensorflow.keras.preprocessing.text import tokenizer_from_json
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from pytube import YouTube
+
+# Modeli yükleme
+path = "bitirme.keras"
+model = keras.saving.load_model(path)
+model.summary()
+
+#Tokenizer'ı yükleme
+with open("bitirme.json", "r") as f:
+    tokenizer = json.load(f)
+
+tokenizer = tokenizer_from_json(tokenizer)
+
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Bellekte sonuçları saklamak için bir sözlük
+results_list = {}
+
+def get_caption(captions):
+    sentiment_list = []
+    for obj in captions.json_captions["events"]:
+        sentiment_obj = {}
+        texts = obj.get("segs",[None])
+        if texts[0]:
+            sentiment = ""
+            if obj.get("segs",[None])[0]["utf8"] == "\n":
+                continue
+            for text in texts:
+                if text.get("utf8","none") == "\n":
+                    continue
+                if "[\xa0__\xa0]" in text.get("utf8","none"):
+                    text["utf8"] = text["utf8"].replace("[\xa0__\xa0]","amk")
+                sentiment += text.get("utf8","none") + " "
+
+            start = obj["tStartMs"]
+            end = start + obj["dDurationMs"]
+            sentiment_obj["sentiment"] = sentiment
+            sentiment_obj["start"] = start/1000
+            sentiment_obj["end"] = end/1000
+            sentiment_list.append(sentiment_obj)
+    return sentiment_list
+
+def results(sentiment_list,link):
+    link_list = []
+    for obj in sentiment_list:
+        link_obj = {}
+        text = obj["sentiment"]
+        text= text.replace("İ","i").replace("I","ı").lower()
+        text = tokenizer.texts_to_sequences([text])
+        text = pad_sequences(text, maxlen=1135)
+        prediction = model.predict(text)
+        result =  prediction.argmax()
+        if result != 0:
+            link_obj["text"] = obj["sentiment"]
+            link_obj["result"] = int(result)
+            time_stamp = int(obj["start"])
+            link_obj["link"] = f"{link}&t={time_stamp}s"
+            link_list.append(link_obj)
+    return link_list
+
+# Yapay zeka modelini simüle eden basit bir fonksiyon
+def ai_model_predict(youtube_url):
+    yt = YouTube(youtube_url)
+    stream = yt.streams.get_audio_only()
+    try:
+        captions = yt.captions["tr"]
+    except KeyError as error:
+        print("auto_generated",error,youtube_url)
+        captions = yt.captions["a.tr"]
+    except:
+        captions = "not_found"
+        
+    sentiment_list = get_caption(captions)
+    sentiment_list_with_results = results(sentiment_list,youtube_url)
+    return sentiment_list_with_results
+
+class YouTubeURLRequest(BaseModel):
+    youtube_url: str
+
+@app.post("/predict/")
+async def predict(request: YouTubeURLRequest):
+    youtube_link = request.youtube_url
+    if not youtube_link:
+        raise HTTPException(status_code=400, detail="YouTube URL is required.")
+    video_id = YouTube(youtube_link).video_id
+    prediction = ai_model_predict(youtube_link)
+    # Sonucu sakla
+    results_list[video_id] = prediction
+    
+    return JSONResponse(content={"youtube_url": video_id, "prediction": prediction})
+
+@app.get("/results/{youtube_url}", response_class=HTMLResponse)
+async def get_result(request: Request, youtube_url: str):
+    result = results_list.get(youtube_url, "Result not found.")
+    
+    if result == "Result not found.":
+        return templates.TemplateResponse("not_found.html", {"request": request, "result": result, "youtube_url": youtube_url})
+    
+    return templates.TemplateResponse("result.html", {"request": request, "result": result, "youtube_url": youtube_url})
+
+@app.get("/",response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html",{"request": request})

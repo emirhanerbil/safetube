@@ -10,6 +10,7 @@ import json
 from tensorflow.keras.preprocessing.text import tokenizer_from_json
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from pytube import YouTube
+from fastapi.middleware.cors import CORSMiddleware
 
 # Modeli yükleme
 path = "bitirme.keras"
@@ -23,6 +24,21 @@ with open("bitirme.json", "r") as f:
 tokenizer = tokenizer_from_json(tokenizer)
 
 app = FastAPI()
+
+origins = [
+    "chrome-extension://mkiplihndmffgfnefmbopejpdjjdofjl",
+    "http://localhost:8000",
+    # Diğer izin verilen origin'leri buraya ekleyin
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -100,17 +116,18 @@ async def predict(request: YouTubeURLRequest):
     # Sonucu sakla
     results_list[video_id] = prediction
     
-    return JSONResponse(content={"youtube_url": video_id, "prediction": prediction})
+    return JSONResponse(content={"youtube_url": f"http://localhost:8000/results/{video_id}",})
 
 @app.get("/results/{youtube_url}", response_class=HTMLResponse)
 async def get_result(request: Request, youtube_url: str):
     result = results_list.get(youtube_url, "Result not found.")
-    
+    print(result)
     if result == "Result not found.":
         return templates.TemplateResponse("not_found.html", {"request": request, "result": result, "youtube_url": youtube_url})
     
-    return templates.TemplateResponse("result.html", {"request": request, "result": result, "youtube_url": youtube_url})
+    return templates.TemplateResponse("result_page.html", {"request": request, "result": result})
 
 @app.get("/",response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html",{"request": request})
+    deneme = [{"result":"1"},{"result":"2"}]
+    return templates.TemplateResponse("index.html",{"request": request,"result" : deneme})

@@ -5,3 +5,4 @@ pytube
 jinja2
 pydantic
 numpy
+boto3

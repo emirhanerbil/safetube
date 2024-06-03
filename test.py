@@ -28,6 +28,7 @@ app = FastAPI()
 origins = [
     "chrome-extension://mkiplihndmffgfnefmbopejpdjjdofjl",
     "http://localhost:8000",
+    "chrome-extension://fodpildcedcfegocbfbjlalhmmlkgfdc"
     # Diğer izin verilen origin'leri buraya ekleyin
 ]
 
@@ -123,11 +124,10 @@ async def get_result(request: Request, youtube_url: str):
     result = results_list.get(youtube_url, "Result not found.")
     print(result)
     if result == "Result not found.":
-        return templates.TemplateResponse("not_found.html", {"request": request, "result": result, "youtube_url": youtube_url})
+        return templates.TemplateResponse("not_found.html", {"request": request})
     
     return templates.TemplateResponse("result_page.html", {"request": request, "result": result})
 
 @app.get("/",response_class=HTMLResponse)
 async def home(request: Request):
-    deneme = [{"result":"1"},{"result":"2"}]
-    return templates.TemplateResponse("index.html",{"request": request,"result" : deneme})
+    return templates.TemplateResponse("index.html",{"request": request})

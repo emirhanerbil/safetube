@@ -129,7 +129,7 @@ async def predict(request: YouTubeURLRequest):
     # Sonucu sakla
     results_list[video_id] = prediction
     
-    return JSONResponse(content={"youtube_url": f"http://localhost:8000/results/{video_id}",})
+    return JSONResponse(content={"youtube_url": f"http://18.194.92.133/results/{video_id}",})
 
 @app.get("/results/{youtube_url}", response_class=HTMLResponse)
 async def get_result(request: Request, youtube_url: str):

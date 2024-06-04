@@ -13,15 +13,19 @@ from pytube import YouTube
 from fastapi.middleware.cors import CORSMiddleware
 
 # Modeli yükleme
-path = "bitirme.keras"
-model = keras.saving.load_model(path)
-model.summary()
+# path = "bitirme.keras"
+# model = keras.saving.load_model(path)
+# model.summary()
 
-#Tokenizer'ı yükleme
-with open("bitirme.json", "r") as f:
-    tokenizer = json.load(f)
+# #Tokenizer'ı yükleme
+# with open("bitirme.json", "r") as f:
+#     tokenizer = json.load(f)
 
-tokenizer = tokenizer_from_json(tokenizer)
+# tokenizer = tokenizer_from_json(tokenizer)
+import pickle
+
+with open('bitirme_model.pickle', 'rb') as f:
+    model = pickle.load(f)
 
 app = FastAPI()
 
@@ -76,13 +80,21 @@ def results(sentiment_list,link):
         link_obj = {}
         text = obj["sentiment"]
         text= text.replace("İ","i").replace("I","ı").lower()
-        text = tokenizer.texts_to_sequences([text])
-        text = pad_sequences(text, maxlen=1135)
-        prediction = model.predict(text)
-        result =  prediction.argmax()
-        if result != 0:
+        # text = tokenizer.texts_to_sequences([text])
+        # text = pad_sequences(text, maxlen=1135)
+        # prediction = model.predict(text)
+        # result =  prediction.argmax()
+            # if sen["text"] == "kız":
+            #     print(sen["text"])
+        result = model.predict([text])
+        if result != "OTHER" and result != "INSULT":
             link_obj["text"] = obj["sentiment"]
-            link_obj["result"] = int(result)
+            print(link_obj["text"])
+            if "kız" in link_obj["text"]:
+                print("girdi")
+                continue
+            # link_obj["result"] = int(result)
+            link_obj["result"] = result
             time_stamp = int(obj["start"])
             link_obj["link"] = f"{link}&t={time_stamp}s"
             link_list.append(link_obj)

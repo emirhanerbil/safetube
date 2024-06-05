@@ -72,6 +72,9 @@ def results(sentiment_list,link):
             link_list.append(link_obj)
     return link_list
 
+
+
+
 @app.get("/")
 async def root(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})

@@ -125,6 +125,10 @@ async def predict(request: YouTubeURLRequest):
     if not youtube_link:
         raise HTTPException(status_code=400, detail="YouTube URL is required.")
     video_id = YouTube(youtube_link).video_id
+    if video_id in results_list:
+        print("Önceden Kontrol Edilmiş.")
+        return JSONResponse(content={"youtube_url": f"http://18.194.92.133/results/{video_id}",})
+    
     prediction = ai_model_predict(youtube_link)
     # Sonucu sakla
     results_list[video_id] = prediction

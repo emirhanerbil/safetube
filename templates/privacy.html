@@ -63,38 +63,39 @@
         <section id="services" class="services section">
             <!-- Section Title -->
             <div class="container section-title" data-aos="fade-up">
-            <h2>Sonuçlar</h2>
-            <p>Videolar için tıklayabilirsiniz</p>
+            <h2>Gizlilik Politikası</h2>
+            <br>
+            <h6>
+                Safetube olarak kullanıcı gizliliğini önemsiyoruz. Bu gizlilik politikası, uygulamamızın kullanıcı verilerini nasıl işlediğini ve gizliliğinizi nasıl koruduğumuzu açıklar.
+            </h6>
+            <br>
+            <h6>
+                Safetube herhangi bir kullanıcı verisini toplamaz veya depolamaz. Kullanıcıların YouTube geçmişi test bağlantısı, yalnızca kullanıcı cihazında lokal olarak tutulur ve sunucularımıza aktarılmaz.
+            </h6>
+            <br>
+            <h6>
+                Toplanan veri olmadığı için, Safetube kullanıcı verilerini işlememekte veya üçüncü taraflarla paylaşmamaktadır.
+            </h6>
+            <br>
+            <h6>
+                Veri toplamadığımız için kullanıcıların herhangi bir verisini koruma zorunluluğumuz bulunmamaktadır. Ancak kullanıcıların cihazlarındaki yerel verilere erişim tamamen kullanıcı kontrolündedir.
+            </h6>
+            <br>
+            <h6>
+                Kullanıcılar, Safetube ile ilgili herhangi bir veriyi paylaşmadıkları için herhangi bir veri üzerinde hak talebinde bulunmalarına gerek yoktur.
+            </h6>
+            <br>
+            <h6>
+                Bu gizlilik politikası zaman zaman güncellenebilir. Politika değişiklikleri hakkında kullanıcılar bilgilendirilecektir.
+            </h6>
+            <br>
+            <h6>Safetube hakkında sorularınız için bizimle iletişime geçebilirsiniz: safetube.info@gmail.com
+            </h6>
             
             </div><!-- End Section Title -->
             <div class="container">
                 <div class="row gy-4">
-                  {% if result %}
-                        {% else %}
-                        <div class="container section-title" data-aos="fade-up">
-                          <h2>Videoda uygunsuz cümle bulunmamaktadır.</h2>
-                        </div>
-                  {% endif %}
-                    {% for item in result %}
-                        <div class="col-lg-6 " data-aos="fade-up" data-aos-delay="100">
-                            <div class="service-item d-flex">
-                                <div class="icon flex-shrink-0"><i class="bi bi-camera-video"></i></div>
-                                <div>
-                                    <h4 class="title"><a href={{item['link']}} class="stretched-link">
-                                      {{ 
-                                        "Hakaret" if item["result"][0] == "INSULT" else 
-                                        "Küfür" if item["result"][0] == "PROFANITY" else 
-                                        "Irkçılık" if item["result"][0] == "RACIST" else 
-                                        "Cinsiyetçilik" 
-                                    }}
-                                    
-                                    </a></h4>
-                                    <p class="description">{{ item["text"] }}</p>
-                                    <p class="description">{{ item["link"] }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
+                 
 
             </div>
             </div>
@@ -165,6 +166,7 @@
     </div>
 
   </footer>
+
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

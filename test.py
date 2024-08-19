@@ -147,3 +147,7 @@ async def get_result(request: Request, youtube_url: str):
 @app.get("/",response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html",{"request": request})
+
+@app.get("/privacy",response_class=HTMLResponse)
+async def privacy_page(request: Request):
+    return templates.TemplateResponse("privacy.html",{"request": request})
